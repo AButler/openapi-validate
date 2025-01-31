@@ -9,7 +9,12 @@ internal static class OpenApiExtensions
     public static JsonSchema ToJsonSchema(this OpenApiSchema schema)
     {
         var writer = new StringWriter();
-        schema.SerializeAsV31(new OpenApiJsonWriter(writer));
+        var writerSettings = new OpenApiWriterSettings
+        {
+            InlineExternalReferences = true,
+            InlineLocalReferences = true,
+        };
+        schema.SerializeAsV31(new OpenApiJsonWriter(writer, writerSettings));
 
         var json = writer.ToString();
         return JsonSchema.FromText(json);
