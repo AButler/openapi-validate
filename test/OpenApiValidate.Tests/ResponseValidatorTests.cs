@@ -17,9 +17,12 @@ public class ResponseValidatorTests
         var request = new Request("GET", new Uri("http://api.example.com/v1/users"));
         var response = new Response(200, "application/json", """["user1"]""");
 
-        var valid = validator.TryValidate(request, response);
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
 
-        valid.ShouldBeTrue();
+        validateAction.ShouldNotThrow();
     }
 
     [Fact]
@@ -36,9 +39,33 @@ public class ResponseValidatorTests
             """{"id": 5, "name": "dog", "photoUrls": []}"""
         );
 
-        var valid = validator.TryValidate(request, response);
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
 
-        valid.ShouldBeTrue();
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task Petstore_DeletePet()
+    {
+        var openApiDocument = await GetDocument("TestData/Petstore.yaml");
+
+        var validator = new OpenApiResponseValidator(openApiDocument);
+
+        var request = new Request(
+            "DELETE",
+            new Uri("https://petstore3.swagger.io/api/v3/pet/Pet1")
+        );
+        var response = new Response(201);
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
     }
 
     private static async Task<OpenApiDocument> GetDocument(string filename)

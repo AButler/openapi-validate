@@ -277,6 +277,8 @@ paths:
             type: integer
             format: int64
       responses:
+        '201':
+          description: Deleted successfully
         '400':
           description: Invalid pet value
       security:
