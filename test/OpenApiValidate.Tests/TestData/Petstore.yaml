@@ -73,6 +73,8 @@ paths:
           description: Pet not found
         '422':
           description: Validation exception
+        '5XX':
+          description: Server error
       security:
         - petstore_auth:
             - write:pets

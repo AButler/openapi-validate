@@ -3,8 +3,45 @@ using Microsoft.OpenApi.Models;
 
 namespace OpenApiValidate;
 
-public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
+public class OpenApiResponseValidator
 {
+    private readonly OpenApiDocument _openApiDocument;
+    private readonly OpenApiValidatorSettings _settings;
+
+    public OpenApiResponseValidator(
+        OpenApiDocument openApiDocument,
+        OpenApiValidatorSettings? settings = null
+    )
+    {
+        _openApiDocument = openApiDocument;
+        _settings = settings ?? new OpenApiValidatorSettings();
+
+        ValidateSettings();
+    }
+
+    private void ValidateSettings()
+    {
+        if (_settings.ServerAliases.Count == 0)
+        {
+            return;
+        }
+
+        if (_openApiDocument.Servers == null)
+        {
+            throw new InvalidOperationException(
+                $"Server '{_settings.ServerAliases.First().Key}' not found"
+            );
+        }
+
+        foreach (var serverAlias in _settings.ServerAliases.Keys)
+        {
+            if (_openApiDocument.Servers.All(s => s.Url != serverAlias))
+            {
+                throw new InvalidOperationException($"Server '{serverAlias}' not found");
+            }
+        }
+    }
+
     public void Validate(Request request, Response response)
     {
         if (!TryValidate(request, response, out var validationErrors))
@@ -24,24 +61,27 @@ public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
     {
         validationErrors = [];
 
-        //TODO: No servers?
-        var server = openApiDocument.Servers.FirstOrDefault(s =>
-            request.Uri.ToString().StartsWith(s.Url)
-        );
+        var requestPath = "/" + request.Uri.AbsolutePath;
 
-        if (server == null)
+        if (_openApiDocument.Servers != null && _openApiDocument.Servers.Any())
         {
-            validationErrors.Add(new ValidationError("Server not found"));
-            return false;
+            var server = FindServer(request);
+
+            if (server == null)
+            {
+                validationErrors.Add(
+                    new ValidationError($"Server not found matching request '{request.Uri}'")
+                );
+                return false;
+            }
+
+            var serverUrl = _settings.ServerAliases.GetValueOrDefault(server.Url, server.Url);
+            requestPath = MakeRelativePath(serverUrl, request.Uri);
         }
 
-        var requestPath = MakeRelativePath(server, request.Uri);
-
-        var path = FindPath(openApiDocument, requestPath);
-
-        if (path == null)
+        if (!_openApiDocument.Paths.TryMatchPath(requestPath, out OpenApiPathItem path))
         {
-            validationErrors.Add(new ValidationError("Path not found"));
+            validationErrors.Add(new ValidationError($"Path not found: '{requestPath}'"));
             return false;
         }
 
@@ -49,14 +89,15 @@ public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
 
         if (!path.Operations.TryGetValue(operationType, out var operation))
         {
-            validationErrors.Add(new ValidationError($"Operation not found: {request.Method}"));
+            validationErrors.Add(new ValidationError($"Operation not found: '{request.Method}'"));
             return false;
         }
 
-        //TODO: status code ranges, e.g. 5XX
-        if (!operation.Responses.TryGetValue(response.StatusCode.ToString(), out var responseModel))
+        if (!operation.Responses.TryMatchResponse(response.StatusCode, out var responseModel))
         {
-            validationErrors.Add(new ValidationError($"Response not found: {response.StatusCode}"));
+            validationErrors.Add(
+                new ValidationError($"Response status code not found: {response.StatusCode}")
+            );
             return false;
         }
 
@@ -70,9 +111,15 @@ public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
         if (!responseModel.Content.TryGetValue(response.ContentType, out var contentType))
         {
             validationErrors.Add(
-                new ValidationError($"Content type not found: {response.ContentType}")
+                new ValidationError($"Response content type not found: '{response.ContentType}'")
             );
             return false;
+        }
+
+        if (response.Body == null)
+        {
+            // No body, nothing left to validate
+            return true;
         }
 
         if (contentType.Schema == null)
@@ -98,58 +145,35 @@ public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
         return true;
     }
 
-    private static OpenApiPathItem? FindPath(OpenApiDocument document, PathString requestPath)
+    private OpenApiServer? FindServer(Request request)
     {
-        foreach (var kvp in document.Paths)
+        if (_openApiDocument.Servers == null)
         {
-            var specPath = new PathString(kvp.Key);
-            if (IsPathMatch(specPath, requestPath))
+            return null;
+        }
+
+        foreach (var server in _openApiDocument.Servers)
+        {
+            var replacedServerUri = _settings.ServerAliases.GetValueOrDefault(
+                server.Url,
+                server.Url
+            );
+
+            if (request.Uri.ToString().StartsWith(replacedServerUri))
             {
-                return kvp.Value;
+                return server;
             }
         }
 
         return null;
     }
 
-    private static bool IsPathMatch(PathString specPath, PathString requestPath)
+    private static string MakeRelativePath(string serverUrl, Uri requestUri)
     {
-        if (specPath.Segments.Length != requestPath.Segments.Length)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < specPath.Segments.Length; i++)
-        {
-            var segment = specPath.Segments[i];
-
-            if (segment.StartsWith("{") && segment.EndsWith("}"))
-            {
-                // Is template parameter, so skip checking
-                continue;
-            }
-
-            if (
-                !segment.Equals(
-                    requestPath.Segments[i],
-                    StringComparison.InvariantCultureIgnoreCase
-                )
-            )
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static PathString MakeRelativePath(OpenApiServer server, Uri requestUri)
-    {
-        var serverUrl = server.Url.EndsWith("/") ? server.Url : server.Url + "/";
-        var serverUri = new Uri(serverUrl);
+        var serverUri = new Uri(serverUrl.EnsureEndsWith("/"));
         var relativeUri = serverUri.MakeRelativeUri(requestUri);
 
-        return new PathString("/" + relativeUri);
+        return "/" + relativeUri;
     }
 
     private static OperationType ToOperationType(string method)
@@ -167,6 +191,11 @@ public class OpenApiResponseValidator(OpenApiDocument openApiDocument)
             _ => throw new ArgumentException($"Unknown operation type: {method}"),
         };
     }
+}
+
+public record OpenApiValidatorSettings
+{
+    public IDictionary<string, string> ServerAliases { get; } = new Dictionary<string, string>();
 }
 
 public record ValidationError(string Message);
