@@ -77,7 +77,7 @@ public class ResponseValidatorTests
             "application/json",
             """{"name": "dog", "photoUrls": []}"""
         );
-        
+
         var response = new Response(
             200,
             "application/json",
@@ -105,7 +105,7 @@ public class ResponseValidatorTests
             "application/json",
             """{"name": "dog", "photoUrls": []}"""
         );
-        
+
         var response = new Response(500);
 
         var validateAction = () =>
