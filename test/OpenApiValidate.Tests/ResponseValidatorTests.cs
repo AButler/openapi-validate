@@ -71,7 +71,13 @@ public class ResponseValidatorTests
 
         var validator = new OpenApiResponseValidator(openApiDocument);
 
-        var request = new Request("PUT", new Uri("https://petstore3.swagger.io/api/v3/pet"));
+        var request = new Request(
+            "PUT",
+            new Uri("https://petstore3.swagger.io/api/v3/pet"),
+            "application/json",
+            """{"name": "dog", "photoUrls": []}"""
+        );
+        
         var response = new Response(
             200,
             "application/json",
@@ -93,7 +99,13 @@ public class ResponseValidatorTests
 
         var validator = new OpenApiResponseValidator(openApiDocument);
 
-        var request = new Request("PUT", new Uri("https://petstore3.swagger.io/api/v3/pet"));
+        var request = new Request(
+            "PUT",
+            new Uri("https://petstore3.swagger.io/api/v3/pet"),
+            "application/json",
+            """{"name": "dog", "photoUrls": []}"""
+        );
+        
         var response = new Response(500);
 
         var validateAction = () =>

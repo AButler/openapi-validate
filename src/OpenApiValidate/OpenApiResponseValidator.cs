@@ -16,40 +16,14 @@ public class OpenApiResponseValidator
         _openApiDocument = openApiDocument;
         _settings = settings ?? new OpenApiValidatorSettings();
 
-        ValidateSettings();
-    }
-
-    private void ValidateSettings()
-    {
-        if (_settings.ServerAliases.Count == 0)
-        {
-            return;
-        }
-
-        if (_openApiDocument.Servers == null)
-        {
-            throw new InvalidOperationException(
-                $"Server '{_settings.ServerAliases.First().Key}' not found"
-            );
-        }
-
-        foreach (var serverAlias in _settings.ServerAliases.Keys)
-        {
-            if (_openApiDocument.Servers.All(s => s.Url != serverAlias))
-            {
-                throw new InvalidOperationException($"Server '{serverAlias}' not found");
-            }
-        }
+        new OpenApiSettingsValidator(_openApiDocument, _settings).Validate();
     }
 
     public void Validate(Request request, Response response)
     {
         if (!TryValidate(request, response, out var validationErrors))
         {
-            throw new Exception(
-                "The validation failed: \n\n"
-                    + string.Join("\n", validationErrors.Select(error => error.Message))
-            );
+            throw new OpenApiValidationException(validationErrors);
         }
     }
 
@@ -70,7 +44,9 @@ public class OpenApiResponseValidator
             if (server == null)
             {
                 validationErrors.Add(
-                    new ValidationError($"Server not found matching request '{request.Uri}'")
+                    new ValidationError(
+                        $"No server found that matched the request: '{request.Uri}'"
+                    )
                 );
                 return false;
             }
@@ -81,7 +57,9 @@ public class OpenApiResponseValidator
 
         if (!_openApiDocument.Paths.TryMatchPath(requestPath, out OpenApiPathItem path))
         {
-            validationErrors.Add(new ValidationError($"Path not found: '{requestPath}'"));
+            validationErrors.Add(
+                new ValidationError($"No path found that matched the request path: '{requestPath}'")
+            );
             return false;
         }
 
@@ -89,14 +67,122 @@ public class OpenApiResponseValidator
 
         if (!path.Operations.TryGetValue(operationType, out var operation))
         {
-            validationErrors.Add(new ValidationError($"Operation not found: '{request.Method}'"));
+            validationErrors.Add(
+                new ValidationError(
+                    $"No operation found that matched the request method: '{request.Method}'"
+                )
+            );
             return false;
         }
+
+        if (
+            _settings.ValidateRequest
+            && !TryValidateRequest(request, operation, out var requestValidationErrors)
+        )
+        {
+            validationErrors.AddRange(requestValidationErrors);
+            return false;
+        }
+
+        if (
+            _settings.ValidateResponse
+            && !TryValidateResponse(response, operation, out var responseValidationErrors)
+        )
+        {
+            validationErrors.AddRange(responseValidationErrors);
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryValidateRequest(
+        Request request,
+        OpenApiOperation operation,
+        out List<ValidationError> validationErrors
+    )
+    {
+        validationErrors = [];
+
+        if (operation.RequestBody == null)
+        {
+            // Nothing to validate
+            return true;
+        }
+
+        if (request.Body == null)
+        {
+            if (!operation.RequestBody.Required)
+            {
+                // Body not required
+                return true;
+            }
+
+            validationErrors.Add(new ValidationError("Request body is required"));
+            return false;
+        }
+
+        if (request.ContentType == null)
+        {
+            // No content type, therefore no body
+            //TODO: check if has body and no content type
+            return true;
+        }
+
+        if (!operation.RequestBody.Content.TryGetValue(request.ContentType, out var contentType))
+        {
+            validationErrors.Add(
+                new ValidationError(
+                    $"No content type found that matched the request content type: '{request.ContentType}'"
+                )
+            );
+            return false;
+        }
+
+        if (contentType.Schema == null)
+        {
+            //No schema - does this mean no body?
+            return false;
+        }
+
+        var jsonSchema = contentType.Schema.ToJsonSchema();
+        var validationResult = jsonSchema.Evaluate(JsonNode.Parse(request.Body));
+
+        if (!validationResult.IsValid)
+        {
+            if (validationResult.Errors == null)
+            {
+                validationErrors.Add(new ValidationError("Unknown request schema error"));
+            }
+            else
+            {
+                validationErrors.AddRange(
+                    validationResult.Errors!.Values.Select(e => new ValidationError(
+                        "Request body failed schema validation: " + e
+                    ))
+                );
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool TryValidateResponse(
+        Response response,
+        OpenApiOperation operation,
+        out List<ValidationError> validationErrors
+    )
+    {
+        validationErrors = [];
 
         if (!operation.Responses.TryMatchResponse(response.StatusCode, out var responseModel))
         {
             validationErrors.Add(
-                new ValidationError($"Response status code not found: {response.StatusCode}")
+                new ValidationError(
+                    $"No status code found that matched the response status code: {response.StatusCode}"
+                )
             );
             return false;
         }
@@ -111,7 +197,9 @@ public class OpenApiResponseValidator
         if (!responseModel.Content.TryGetValue(response.ContentType, out var contentType))
         {
             validationErrors.Add(
-                new ValidationError($"Response content type not found: '{response.ContentType}'")
+                new ValidationError(
+                    $"No content type found that matched the response content type: '{response.ContentType}'"
+                )
             );
             return false;
         }
@@ -133,12 +221,19 @@ public class OpenApiResponseValidator
 
         if (!validationResult.IsValid)
         {
-            validationErrors.Add(
-                new ValidationError(
-                    "Response body did not match schema: \n\n"
-                        + string.Join("\n", validationResult.Errors?.Values ?? [])
-                )
-            );
+            if (validationResult.Errors == null)
+            {
+                validationErrors.Add(new ValidationError("Unknown response schema error"));
+            }
+            else
+            {
+                validationErrors.AddRange(
+                    validationResult.Errors!.Values.Select(e => new ValidationError(
+                        "Response body failed schema validation: " + e
+                    ))
+                );
+            }
+
             return false;
         }
 
@@ -192,14 +287,3 @@ public class OpenApiResponseValidator
         };
     }
 }
-
-public record OpenApiValidatorSettings
-{
-    public IDictionary<string, string> ServerAliases { get; } = new Dictionary<string, string>();
-}
-
-public record ValidationError(string Message);
-
-public record Request(string Method, Uri Uri);
-
-public record Response(int StatusCode, string? ContentType = null, string? Body = null);
