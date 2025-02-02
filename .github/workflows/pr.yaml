@@ -1,0 +1,15 @@
+﻿name: Build & Test (Pull Request)
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-dotnet:
+    name: Build & Test
+    uses: ./.github/workflows/build-dotnet.yaml
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+    secrets: inherit

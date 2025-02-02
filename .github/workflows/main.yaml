@@ -1,0 +1,43 @@
+﻿name: Build & Test (Main)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-number:
+    name: Generate Build Number
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      build-number: ${{ steps.build-number.outputs.build_number }}
+      version: "0.1.${{ steps.build-number.outputs.build_number }}"
+      sha_short: ${{ steps.sha.outputs.sha_short }}
+      informational_version: "0.1.${{ steps.build-number.outputs.build_number }}+${{ steps.sha.outputs.sha_short }}"
+    steps:
+      - name: Generate build number
+        id: build-number
+        uses: onyxmueller/build-tag-number@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .
+      - name: Generate variables
+        id: sha
+        run: |
+          sha_short=$(git rev-parse --short HEAD)
+          echo "sha_short=$sha_short"
+          echo "sha_short=$sha_short" >> "$GITHUB_OUTPUT"
+          
+  build-dotnet:
+    name: (.NET) Build & Test
+    uses: ./.github/workflows/build-dotnet.yaml
+    needs: build-number
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+    secrets: inherit

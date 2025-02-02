@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version Number"
+        required: true
+        type: string
+
+jobs:
+  version:
+    name: Validate version
+    runs-on: ubuntu-latest
+    outputs:
+      version_3: ${{ steps.version.outputs.version_3 }}
+      version_suffix: ${{ steps.version.outputs.version_suffix }}
+      version_full: ${{ steps.version.outputs.version_full }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: build
+
+      - name: Parse version
+        id: version
+        run: ./build/Get-Version.ps1 -Version ${{ inputs.version }}
+        shell: pwsh
+
+  build:
+    name: (.NET) Build & Test
+    uses: ./.github/workflows/build-dotnet.yml
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - version
+      - build
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+            
+      - name: Pack
+        run: dotnet pack -p:VersionPrefix="${{ needs.version.outputs.version_3 }}" --version-suffix "${{ needs.version.outputs.version_suffix }}"
+        
+      - name: Publish
+        run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_APIKEY }} --source https://api.nuget.org/v3/index.json
+        working-directory: .nupkgs
+        
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ needs.version.outputs.version_full }}
+          draft: true
+          generateReleaseNotes: true
+          artifacts: ".nupkgs/*"
+          allowUpdates: true
+          updateOnlyUnreleased: true
+          prerelease: ${{ needs.version.outputs.is_prerelease }}
