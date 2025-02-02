@@ -177,7 +177,7 @@ public class OpenApiResponseValidator
     {
         validationErrors = [];
 
-        if (!operation.Responses.TryMatchResponse(response.StatusCode, out var responseModel))
+        if (operation.Responses == null || !operation.Responses.TryMatchResponse(response.StatusCode, out var responseModel))
         {
             validationErrors.Add(
                 new ValidationError(
