@@ -1,14 +1,21 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text;
+using System.Text.Json.Nodes;
+using Json.Schema;
 using Microsoft.OpenApi.Models;
 
 namespace OpenApiValidate;
 
-public class OpenApiResponseValidator
+public class OpenApiValidator
 {
+    private static readonly EvaluationOptions JsonSchemaEvaluationOptions = new()
+    {
+        OutputFormat = OutputFormat.List,
+    };
+
     private readonly OpenApiDocument _openApiDocument;
     private readonly OpenApiValidatorSettings _settings;
 
-    public OpenApiResponseValidator(
+    public OpenApiValidator(
         OpenApiDocument openApiDocument,
         OpenApiValidatorSettings? settings = null
     )
@@ -145,31 +152,16 @@ public class OpenApiResponseValidator
             return false;
         }
 
-        var jsonSchema = contentType.Schema.ToJsonSchema();
-        var validationResult = jsonSchema.Evaluate(JsonNode.Parse(request.Body));
-
-        if (!validationResult.IsValid)
+        if (!TryValidateSchema(contentType.Schema, "Request", request.Body, out var validateErrors))
         {
-            if (validationResult.Errors == null)
-            {
-                validationErrors.Add(new ValidationError("Unknown request schema error"));
-            }
-            else
-            {
-                validationErrors.AddRange(
-                    validationResult.Errors!.Values.Select(e => new ValidationError(
-                        "Request body failed schema validation: " + e
-                    ))
-                );
-            }
-
+            validationErrors.AddRange(validateErrors);
             return false;
         }
 
         return true;
     }
 
-    private static bool TryValidateResponse(
+    private bool TryValidateResponse(
         Response response,
         OpenApiOperation operation,
         out List<ValidationError> validationErrors
@@ -188,6 +180,14 @@ public class OpenApiResponseValidator
                 )
             );
             return false;
+        }
+
+        if (
+            !_settings.ValidateResponseContentTypeIfNotSuccess
+            && !IsSuccessStatusCode(response.StatusCode)
+        )
+        {
+            return true;
         }
 
         if (response.ContentType == null)
@@ -219,23 +219,59 @@ public class OpenApiResponseValidator
             return false;
         }
 
-        var jsonSchema = contentType.Schema.ToJsonSchema();
-        var validationResult = jsonSchema.Evaluate(JsonNode.Parse(response.Body));
+        if (
+            !TryValidateSchema(
+                contentType.Schema,
+                "Response",
+                response.Body,
+                out var validateErrors
+            )
+        )
+        {
+            validationErrors.AddRange(validateErrors);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsSuccessStatusCode(int statusCode)
+    {
+        return statusCode is >= 200 and <= 299;
+    }
+
+    private static bool TryValidateSchema(
+        OpenApiSchema schema,
+        string bodyType,
+        string body,
+        out List<ValidationError> validationErrors
+    )
+    {
+        validationErrors = [];
+
+        var jsonSchema = schema.ToJsonSchema();
+        var validationResult = jsonSchema.Evaluate(
+            JsonNode.Parse(body),
+            JsonSchemaEvaluationOptions
+        );
 
         if (!validationResult.IsValid)
         {
-            if (validationResult.Errors == null)
+            var message = new StringBuilder();
+
+            foreach (var detail in validationResult.Details.Where(d => d.HasErrors))
             {
-                validationErrors.Add(new ValidationError("Unknown response schema error"));
+                var path = detail.EvaluationPath.ToString();
+
+                foreach (var error in detail.Errors!)
+                {
+                    message.AppendLine($"[{error.Key}] {path}: {error.Value}");
+                }
             }
-            else
-            {
-                validationErrors.AddRange(
-                    validationResult.Errors!.Values.Select(e => new ValidationError(
-                        "Response body failed schema validation: " + e
-                    ))
-                );
-            }
+
+            validationErrors.Add(
+                new ValidationError($"{bodyType} body failed schema validation: \n\n" + message)
+            );
 
             return false;
         }

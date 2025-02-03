@@ -12,7 +12,7 @@ public class ResponseValidatorTests
     {
         var openApiDocument = await GetDocument("TestData/Simple.yaml");
 
-        var validator = new OpenApiResponseValidator(openApiDocument);
+        var validator = new OpenApiValidator(openApiDocument);
 
         var request = new Request("GET", new Uri("http://api.example.com/v1/users"));
         var response = new Response(200, "application/json", """["user1"]""");
@@ -33,7 +33,7 @@ public class ResponseValidatorTests
         var settings = new OpenApiValidatorSettings();
         settings.ServerAliases.Add("http://api.example.com/v1", "http://localhost/v1");
 
-        var validator = new OpenApiResponseValidator(openApiDocument, settings);
+        var validator = new OpenApiValidator(openApiDocument, settings);
 
         var request = new Request("GET", new Uri("http://localhost/v1/users"));
         var response = new Response(200, "application/json", """["user1"]""");
@@ -51,7 +51,7 @@ public class ResponseValidatorTests
     {
         var openApiDocument = await GetDocument("TestData/NoServers.yaml");
 
-        var validator = new OpenApiResponseValidator(openApiDocument);
+        var validator = new OpenApiValidator(openApiDocument);
 
         var request = new Request("GET", new Uri("http://localhost/users"));
         var response = new Response(200, "application/json", """["user1"]""");
@@ -69,7 +69,7 @@ public class ResponseValidatorTests
     {
         var openApiDocument = await GetDocument("TestData/Petstore.yaml");
 
-        var validator = new OpenApiResponseValidator(openApiDocument);
+        var validator = new OpenApiValidator(openApiDocument);
 
         var request = new Request(
             "PUT",
@@ -97,7 +97,7 @@ public class ResponseValidatorTests
     {
         var openApiDocument = await GetDocument("TestData/Petstore.yaml");
 
-        var validator = new OpenApiResponseValidator(openApiDocument);
+        var validator = new OpenApiValidator(openApiDocument);
 
         var request = new Request(
             "PUT",
@@ -121,7 +121,7 @@ public class ResponseValidatorTests
     {
         var openApiDocument = await GetDocument("TestData/Petstore.yaml");
 
-        var validator = new OpenApiResponseValidator(openApiDocument);
+        var validator = new OpenApiValidator(openApiDocument);
 
         var request = new Request(
             "DELETE",
