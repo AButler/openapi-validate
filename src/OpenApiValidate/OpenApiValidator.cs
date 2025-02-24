@@ -183,8 +183,9 @@ public class OpenApiValidator
         }
 
         if (
-            !_settings.ValidateResponseContentTypeIfNotSuccess
-            && !IsSuccessStatusCode(response.StatusCode)
+            !_settings.ValidateResponseContentTypeIfStatusCode.ContainsStatusCode(
+                response.StatusCode
+            )
         )
         {
             return true;
@@ -233,11 +234,6 @@ public class OpenApiValidator
         }
 
         return true;
-    }
-
-    private static bool IsSuccessStatusCode(int statusCode)
-    {
-        return statusCode is >= 200 and <= 299;
     }
 
     private static bool TryValidateSchema(
