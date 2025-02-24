@@ -30,7 +30,7 @@ jobs:
 
   build:
     name: (.NET) Build & Test
-    uses: ./.github/workflows/build-dotnet.yml
+    uses: ./.github/workflows/build-dotnet.yaml
     permissions:
       id-token: write
       contents: read
