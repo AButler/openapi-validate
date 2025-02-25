@@ -20,6 +20,8 @@ public class OpenApiValidator
         OpenApiValidatorSettings? settings = null
     )
     {
+        ArgumentNullException.ThrowIfNull(openApiDocument, nameof(openApiDocument));
+
         _openApiDocument = openApiDocument;
         _settings = settings ?? new OpenApiValidatorSettings();
 
