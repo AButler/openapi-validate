@@ -1,12 +1,13 @@
 ﻿using Json.Schema;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 using Microsoft.OpenApi.Writers;
 
 namespace OpenApiValidate;
 
 internal static class OpenApiExtensions
 {
-    public static JsonSchema ToJsonSchema(this OpenApiSchema schema)
+    public static JsonSchema ToJsonSchema(this IOpenApiSchema schema)
     {
         var writer = new StringWriter();
         var writerSettings = new OpenApiWriterSettings
@@ -23,7 +24,7 @@ internal static class OpenApiExtensions
     public static bool TryMatchResponse(
         this OpenApiResponses responses,
         int statusCode,
-        out OpenApiResponse response
+        out IOpenApiResponse response
     )
     {
         if (responses.TryGetValue(statusCode.ToString(), out var statusCodeMatchResponse))
@@ -55,7 +56,7 @@ internal static class OpenApiExtensions
     public static bool TryMatchPath(
         this OpenApiPaths paths,
         string requestPath,
-        out OpenApiPathItem path
+        out IOpenApiPathItem path
     )
     {
         var requestPathString = new PathString(requestPath);

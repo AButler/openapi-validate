@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using Json.Schema;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 
 namespace OpenApiValidate;
 
@@ -64,7 +65,7 @@ public class OpenApiValidator
             requestPath = MakeRelativePath(serverUrl, request.Uri);
         }
 
-        if (!_openApiDocument.Paths.TryMatchPath(requestPath, out OpenApiPathItem path))
+        if (!_openApiDocument.Paths.TryMatchPath(requestPath, out var path))
         {
             validationErrors.Add(
                 new ValidationError($"No path found that matched the request path: '{requestPath}'")
@@ -239,7 +240,7 @@ public class OpenApiValidator
     }
 
     private static bool TryValidateSchema(
-        OpenApiSchema schema,
+        IOpenApiSchema schema,
         string bodyType,
         string body,
         out List<ValidationError> validationErrors
