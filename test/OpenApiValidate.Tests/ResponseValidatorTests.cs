@@ -1,6 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Reader;
-using Microsoft.OpenApi.Readers;
 using Shouldly;
 
 namespace OpenApiValidate.Tests;
@@ -139,15 +138,22 @@ public class ResponseValidatorTests
 
     private static async Task<OpenApiDocument> GetDocument(string filename)
     {
-        OpenApiReaderRegistry.RegisterReader(OpenApiConstants.Yaml, new OpenApiYamlReader());
-        var result = await OpenApiDocument.LoadAsync(File.OpenRead(filename));
+        var settings = new OpenApiReaderSettings();
+        settings.AddYamlReader();
 
-        if (result.Diagnostic.Errors.Any())
+        var result = await OpenApiDocument.LoadAsync(File.OpenRead(filename), settings: settings);
+
+        if (result.Diagnostic != null && result.Diagnostic.Errors.Any())
         {
             throw new Exception(
                 "Invalid OpenAPI document: "
                     + string.Join(Environment.NewLine, result.Diagnostic.Errors)
             );
+        }
+
+        if (result.Document == null)
+        {
+            throw new Exception("Invalid OpenAPI document");
         }
 
         return result.Document;

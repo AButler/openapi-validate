@@ -1,6 +1,4 @@
 ﻿using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Reader;
-using Microsoft.OpenApi.Readers;
 using Shouldly;
 
 namespace OpenApiValidate.Tests;
@@ -14,11 +12,12 @@ public class SimpleExampleTest
 
         // Load the OpenApiDocument
         var documentLoadResult = await OpenApiDocument.LoadAsync(
-            "https://petstore.swagger.io/v2/swagger.json"
+            "https://petstore.swagger.io/v2/swagger.json",
+            token: TestContext.Current.CancellationToken
         );
 
         // Create the OpenApiValidator
-        var validator = new OpenApiValidator(documentLoadResult.Document);
+        var validator = new OpenApiValidator(documentLoadResult.Document!);
 
         // Perform request
         var apiResponse = await httpClient.GetAsync(

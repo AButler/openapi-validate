@@ -61,7 +61,7 @@ public class OpenApiValidator
                 return false;
             }
 
-            var serverUrl = _settings.ServerAliases.GetValueOrDefault(server.Url, server.Url);
+            var serverUrl = _settings.ServerAliases.GetValueOrDefault(server.Url!, server.Url!);
             requestPath = MakeRelativePath(serverUrl, request.Uri);
         }
 
@@ -73,9 +73,12 @@ public class OpenApiValidator
             return false;
         }
 
-        var operationType = ToOperationType(request.Method);
+        var operationType = ToHttpMethod(request.Method);
 
-        if (!path.Operations.TryGetValue(operationType, out var operation))
+        if (
+            path.Operations == null
+            || !path.Operations.TryGetValue(operationType, out var operation)
+        )
         {
             validationErrors.Add(
                 new ValidationError(
@@ -139,7 +142,10 @@ public class OpenApiValidator
             return true;
         }
 
-        if (!operation.RequestBody.Content.TryGetValue(request.ContentType, out var contentType))
+        if (
+            operation.RequestBody.Content == null
+            || !operation.RequestBody.Content.TryGetValue(request.ContentType, out var contentType)
+        )
         {
             validationErrors.Add(
                 new ValidationError(
@@ -201,7 +207,10 @@ public class OpenApiValidator
             return true;
         }
 
-        if (!responseModel.Content.TryGetValue(response.ContentType, out var contentType))
+        if (
+            responseModel.Content == null
+            || !responseModel.Content.TryGetValue(response.ContentType, out var contentType)
+        )
         {
             validationErrors.Add(
                 new ValidationError(
@@ -287,6 +296,11 @@ public class OpenApiValidator
 
         foreach (var server in _openApiDocument.Servers)
         {
+            if (server.Url == null)
+            {
+                continue;
+            }
+
             var replacedServerUri = _settings.ServerAliases.GetValueOrDefault(
                 server.Url,
                 server.Url
@@ -309,18 +323,18 @@ public class OpenApiValidator
         return "/" + relativeUri;
     }
 
-    private static OperationType ToOperationType(string method)
+    private static HttpMethod ToHttpMethod(string method)
     {
         return method.ToUpperInvariant() switch
         {
-            "GET" => OperationType.Get,
-            "POST" => OperationType.Post,
-            "PUT" => OperationType.Put,
-            "PATCH" => OperationType.Patch,
-            "DELETE" => OperationType.Delete,
-            "HEAD" => OperationType.Head,
-            "OPTIONS" => OperationType.Options,
-            "TRACE" => OperationType.Trace,
+            "GET" => HttpMethod.Get,
+            "POST" => HttpMethod.Post,
+            "PUT" => HttpMethod.Put,
+            "PATCH" => HttpMethod.Patch,
+            "DELETE" => HttpMethod.Delete,
+            "HEAD" => HttpMethod.Head,
+            "OPTIONS" => HttpMethod.Options,
+            "TRACE" => HttpMethod.Trace,
             _ => throw new ArgumentException($"Unknown operation type: {method}"),
         };
     }
