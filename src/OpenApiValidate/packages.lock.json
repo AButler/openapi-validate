@@ -13,11 +13,11 @@
       },
       "Microsoft.OpenApi.YamlReader": {
         "type": "Direct",
-        "requested": "[2.0.0-preview.17, )",
-        "resolved": "2.0.0-preview.17",
-        "contentHash": "LJqmf8xqY8c1ARkN8yTspIp1xvxfEJRF3rwc5v8e/rp2C3h2AP8XMabDT0CxSDcTgPGvlLfRhhbbIiZu1dH55Q==",
+        "requested": "[2.0.0-preview.19, )",
+        "resolved": "2.0.0-preview.19",
+        "contentHash": "Lvf1VhA1EO6NQDpq++g52PPQPeOEypCPdPjMy+ZO18X6Q+giLRNovQ6Ec6yswsIhLePUcCKFETjNnJ70LAsV4A==",
         "dependencies": {
-          "Microsoft.OpenApi": "2.0.0-preview.17",
+          "Microsoft.OpenApi": "2.0.0-preview.19",
           "SharpYaml": "2.1.1",
           "System.Text.Json": "8.0.5"
         }
@@ -43,8 +43,8 @@
       },
       "Microsoft.OpenApi": {
         "type": "Transitive",
-        "resolved": "2.0.0-preview.17",
-        "contentHash": "jeTjhKn8yZjrROb0OibINAp4pTfZ0qRsnXdsq2RkHlczHScDEc8oG3BfTKfTtfpcpi0wO8F/GNCYbN59rOjVzg==",
+        "resolved": "2.0.0-preview.19",
+        "contentHash": "H6gSJpRG2iXuJemO3Kz0VF+fg1mW1oqYkHEN0Ytc+HlK5RK4Ud+o3lcqFozXgkU1TWJ/wGcM70UkdUKpf6lmIw==",
         "dependencies": {
           "System.Text.Json": "8.0.5"
         }
