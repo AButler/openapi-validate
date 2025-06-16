@@ -1,8 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json.Nodes;
 using Json.Schema;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.Interfaces;
+using Microsoft.OpenApi;
 
 namespace OpenApiValidate;
 

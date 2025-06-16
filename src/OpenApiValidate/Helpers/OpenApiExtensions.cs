@@ -1,7 +1,5 @@
 ﻿using Json.Schema;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.Interfaces;
-using Microsoft.OpenApi.Writers;
+using Microsoft.OpenApi;
 
 namespace OpenApiValidate;
 
