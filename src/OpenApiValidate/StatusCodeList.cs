@@ -1,45 +1,37 @@
-﻿using System.Collections;
-using System.Net;
+﻿namespace OpenApiValidate;
 
-namespace OpenApiValidate;
-
-public class StatusCodeList : IEnumerable<int>
+public class StatusCodeList
 {
     private readonly List<int> _statusCodes = [];
 
     public bool ShouldValidateAll => _statusCodes.Count == 0;
+
+    public StatusCodeList() { }
+
+    public StatusCodeList(IEnumerable<int> statusCodes)
+    {
+        _statusCodes = new List<int>(statusCodes);
+    }
 
     public bool ContainsStatusCode(int statusCode)
     {
         return ShouldValidateAll || _statusCodes.Contains(statusCode);
     }
 
-    public bool ContainsStatusCode(HttpStatusCode statusCode) =>
-        ContainsStatusCode((int)statusCode);
-
     public void Add(int statusCode)
     {
         _statusCodes.Add(statusCode);
     }
-
-    public void Add(HttpStatusCode statusCode) => Add((int)statusCode);
 
     public void AddRange(params IEnumerable<int> statusCodes)
     {
         _statusCodes.AddRange(statusCodes);
     }
 
-    public void AddRange(params IEnumerable<HttpStatusCode> statusCodes)
-    {
-        AddRange(statusCodes.Cast<int>());
-    }
-
     public bool Remove(int statusCode)
     {
         return _statusCodes.Remove(statusCode);
     }
-
-    public bool Remove(HttpStatusCode statusCode) => Remove((int)statusCode);
 
     public void Clear()
     {
@@ -51,12 +43,8 @@ public class StatusCodeList : IEnumerable<int>
         return _statusCodes.GetEnumerator();
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable)_statusCodes).GetEnumerator();
-    }
-
     public static StatusCodeList All => new();
+
     public static StatusCodeList SuccessOnly
     {
         get

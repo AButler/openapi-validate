@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace OpenApiValidate;
+﻿namespace OpenApiValidate;
 
 public class OpenApiValidationException : Exception
 {
