@@ -19,10 +19,10 @@ public static class StatusCodeListExtensions
 
     public static void AddRange(
         this StatusCodeList statusCodeList,
-        params IEnumerable<HttpStatusCode> statusCodes
+        params HttpStatusCode[] statusCodes
     )
     {
-        statusCodeList.AddRange(statusCodes.Cast<int>());
+        statusCodeList.AddRange(statusCodes.Cast<int>().ToArray());
     }
 
     public static bool Remove(this StatusCodeList statusCodeList, HttpStatusCode statusCode)

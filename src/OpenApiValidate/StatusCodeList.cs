@@ -23,7 +23,7 @@ public class StatusCodeList
         _statusCodes.Add(statusCode);
     }
 
-    public void AddRange(params IEnumerable<int> statusCodes)
+    public void AddRange(params int[] statusCodes)
     {
         _statusCodes.AddRange(statusCodes);
     }
@@ -49,7 +49,7 @@ public class StatusCodeList
     {
         get
         {
-            var successStatusCodes = Enumerable.Range(200, 99);
+            var successStatusCodes = Enumerable.Range(200, 99).ToArray();
             var list = new StatusCodeList();
             list.AddRange(successStatusCodes);
             return list;
