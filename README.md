@@ -16,6 +16,8 @@ This can be integrated in to a test suite to ensure the responses returned by yo
 dotnet add package OpenApiValidate
 ```
 
+or view on NuGet: https://www.nuget.org/packages/OpenApiValidate
+
 ## Usage
 
 See more detailed documentation for setup of the validator.
