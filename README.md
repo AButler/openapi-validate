@@ -2,6 +2,7 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AButler/openapi-validate/main.yaml)](https://github.com/AButler/openapi-validate/actions/workflows/main.yaml)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/AButler/openapi-validate)](https://github.com/AButler/openapi-validate/releases)
+[![NuGet Version](https://img.shields.io/nuget/v/OpenApiValidate)](https://www.nuget.org/packages/OpenApiValidate)
 [![GitHub](https://img.shields.io/github/license/AButler/openapi-validate)](https://github.com/AButler/openapi-validate/blob/main/LICENSE)
 
 ## Introduction
