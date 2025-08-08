@@ -1,7 +1,7 @@
 # OpenApi Validate
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AButler/openapi-validate/main.yaml)](https://github.com/AButler/openapi-validate/actions/workflows/main.yaml)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/AButler/openapi-validate?include_prereleases)](https://github.com/AButler/openapi-validate/releases)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/AButler/openapi-validate)](https://github.com/AButler/openapi-validate/releases)
 [![GitHub](https://img.shields.io/github/license/AButler/openapi-validate)](https://github.com/AButler/openapi-validate/blob/main/LICENSE)
 
 ## Introduction
