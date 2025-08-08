@@ -20,7 +20,7 @@ internal class PathString : IEquatable<PathString>
             throw new ArgumentException("Path must start with a slash", nameof(value));
         }
 
-        Value = value;
+        Value = RemoveQueryAndHash(value);
         Segments = Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
     }
 
@@ -74,5 +74,18 @@ internal class PathString : IEquatable<PathString>
     public override int GetHashCode()
     {
         return HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(Value) : 0;
+    }
+
+    private static string? RemoveQueryAndHash(string? value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        value = value.Contains("?") ? value[..value.IndexOf("?", StringComparison.Ordinal)] : value;
+        value = value.Contains("#") ? value[..value.IndexOf("#", StringComparison.Ordinal)] : value;
+
+        return value;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json.Nodes;
+using System.Web;
 using Json.Schema;
 using Microsoft.OpenApi;
 
@@ -72,6 +73,18 @@ public class OpenApiValidator
             return false;
         }
 
+        if (
+            !TryValidateRequestParameters(
+                path.Parameters,
+                requestPath,
+                out var parameterValidationErrors
+            )
+        )
+        {
+            validationErrors.AddRange(parameterValidationErrors);
+            return false;
+        }
+
         var operationType = ToHttpMethod(request.Method);
 
         if (
@@ -84,6 +97,18 @@ public class OpenApiValidator
                     $"No operation found that matched the request method: '{request.Method}'"
                 )
             );
+            return false;
+        }
+
+        if (
+            !TryValidateRequestParameters(
+                operation.Parameters,
+                requestPath,
+                out var operationParameterValidationErrors
+            )
+        )
+        {
+            validationErrors.AddRange(operationParameterValidationErrors);
             return false;
         }
 
@@ -106,6 +131,43 @@ public class OpenApiValidator
         }
 
         return true;
+    }
+
+    private static bool TryValidateRequestParameters(
+        IList<IOpenApiParameter>? parameters,
+        string requestPath,
+        out List<ValidationError> validationErrors
+    )
+    {
+        validationErrors = [];
+
+        if (parameters == null)
+        {
+            return true;
+        }
+
+        var requestUri = new Uri(new Uri("http://localhost"), requestPath);
+        var queryString = HttpUtility.ParseQueryString(requestUri.Query);
+
+        var parametersToCheck = parameters.Where(p =>
+            p.Required && p.In == ParameterLocation.Query
+        );
+
+        foreach (var parameter in parametersToCheck)
+        {
+            if (queryString[parameter.Name] != null)
+            {
+                continue;
+            }
+
+            validationErrors.Add(
+                new ValidationError(
+                    $"Required query string parameter '{parameter.Name}' was not in the request"
+                )
+            );
+        }
+
+        return validationErrors.Count == 0;
     }
 
     private bool TryValidateRequest(

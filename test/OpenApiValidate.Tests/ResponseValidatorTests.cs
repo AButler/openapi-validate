@@ -25,6 +25,81 @@ public class ResponseValidatorTests
     }
 
     [Fact]
+    public async Task WithQueryString()
+    {
+        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("GET", new Uri("http://api.example.com/v1/users?key=value"));
+        var response = new Response(200, "application/json", """["user1"]""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task WithRequiredQueryString()
+    {
+        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request(
+            "GET",
+            new Uri("http://api.example.com/v1/users/search?query=foo")
+        );
+        var response = new Response(200, "application/json", """["user1"]""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task WithoutRequiredQueryString()
+    {
+        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("GET", new Uri("http://api.example.com/v1/users/search"));
+        var response = new Response(200, "application/json", """["user1"]""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldThrow<OpenApiValidationException>();
+    }
+
+    [Fact]
+    public async Task WithRouteParameter()
+    {
+        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("GET", new Uri("http://api.example.com/v1/user/1"));
+        var response = new Response(200, "application/json", """{ "id": "user1" }""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
     public async Task ServerAlias()
     {
         var openApiDocument = await GetDocument("TestData/Simple.yaml");
