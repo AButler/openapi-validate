@@ -13,11 +13,11 @@
       },
       "Microsoft.OpenApi.YamlReader": {
         "type": "Direct",
-        "requested": "[2.2.0, )",
-        "resolved": "2.2.0",
-        "contentHash": "wznc6IypdjDu7kUyMeJcWXTB91NwAcyl6DEpHxv5aQ4rbL5BNQ4ElrWr1sQjdX/ZYW+hN4buevyYDD4ZFeXwwQ==",
+        "requested": "[2.3.0, )",
+        "resolved": "2.3.0",
+        "contentHash": "Nyu3UGDrhQwi/9BBZBr2GehOaOpIAlIfBRUPSZnysBM7J4JQ2QMrptdMhIlIa2uZQDx24t1bi3dosqofQZ0mRw==",
         "dependencies": {
-          "Microsoft.OpenApi": "2.2.0",
+          "Microsoft.OpenApi": "2.3.0",
           "SharpYaml": "2.1.3",
           "System.Text.Json": "8.0.5"
         }
@@ -43,8 +43,8 @@
       },
       "Microsoft.OpenApi": {
         "type": "Transitive",
-        "resolved": "2.2.0",
-        "contentHash": "zLDoSPmxIHtEfvR9WaoN4zEFSR+qVxV9gEQbdLjCUUMYTQJh7YOozSd9R5pXm7NYxTAKyOWqQikm7s+gEXOysw==",
+        "resolved": "2.3.0",
+        "contentHash": "5RZpjyt0JMmoc/aEgY9c1vE5pusdDGvkPl9qKIy9KFbRiIXD+w7gBJxX+unSjzzOcfgRoYxnO4okZyqDAL2WEw==",
         "dependencies": {
           "System.Text.Json": "8.0.5"
         }
@@ -72,11 +72,11 @@
       },
       "Microsoft.OpenApi.YamlReader": {
         "type": "Direct",
-        "requested": "[2.2.0, )",
-        "resolved": "2.2.0",
-        "contentHash": "wznc6IypdjDu7kUyMeJcWXTB91NwAcyl6DEpHxv5aQ4rbL5BNQ4ElrWr1sQjdX/ZYW+hN4buevyYDD4ZFeXwwQ==",
+        "requested": "[2.3.0, )",
+        "resolved": "2.3.0",
+        "contentHash": "Nyu3UGDrhQwi/9BBZBr2GehOaOpIAlIfBRUPSZnysBM7J4JQ2QMrptdMhIlIa2uZQDx24t1bi3dosqofQZ0mRw==",
         "dependencies": {
-          "Microsoft.OpenApi": "2.2.0",
+          "Microsoft.OpenApi": "2.3.0",
           "SharpYaml": "2.1.3",
           "System.Text.Json": "8.0.5"
         }
@@ -102,8 +102,8 @@
       },
       "Microsoft.OpenApi": {
         "type": "Transitive",
-        "resolved": "2.2.0",
-        "contentHash": "zLDoSPmxIHtEfvR9WaoN4zEFSR+qVxV9gEQbdLjCUUMYTQJh7YOozSd9R5pXm7NYxTAKyOWqQikm7s+gEXOysw==",
+        "resolved": "2.3.0",
+        "contentHash": "5RZpjyt0JMmoc/aEgY9c1vE5pusdDGvkPl9qKIy9KFbRiIXD+w7gBJxX+unSjzzOcfgRoYxnO4okZyqDAL2WEw==",
         "dependencies": {
           "System.Text.Json": "8.0.5"
         }
