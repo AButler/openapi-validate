@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="JsonSchema.Net" Version="7.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
-    <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="2.3.3" />
+    <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="2.3.5" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
