@@ -5,18 +5,26 @@ namespace OpenApiValidate;
 
 internal static class OpenApiExtensions
 {
+    private static readonly OpenApiWriterSettings OpenApiWriterSettings = new()
+    {
+        InlineExternalReferences = true,
+        InlineLocalReferences = true,
+    };
+
+    private static readonly BuildOptions JsonSchemaBuildOptions = new()
+    {
+        Dialect = Json.Schema.OpenApi.Dialect.OpenApi_31,
+    };
+
     public static JsonSchema ToJsonSchema(this IOpenApiSchema schema)
     {
         var writer = new StringWriter();
-        var writerSettings = new OpenApiWriterSettings
-        {
-            InlineExternalReferences = true,
-            InlineLocalReferences = true,
-        };
-        schema.SerializeAsV31(new OpenApiJsonWriter(writer, writerSettings));
+
+        schema.SerializeAsV31(new OpenApiJsonWriter(writer, OpenApiWriterSettings));
 
         var json = writer.ToString();
-        return JsonSchema.FromText(json);
+
+        return JsonSchema.FromText(json, JsonSchemaBuildOptions);
     }
 
     public static bool TryMatchResponse(
@@ -84,7 +92,7 @@ internal static class OpenApiExtensions
         {
             var segment = specPath.Segments[i];
 
-            if (segment.StartsWith("{") && segment.EndsWith("}"))
+            if (segment.StartsWith('{') && segment.EndsWith('}'))
             {
                 // Is template parameter, so skip checking
                 continue;
