@@ -1,1 +1,5 @@
 ﻿.nuget
+.idea
+*.slnx
+*.csproj
+*.props

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Web;
 using Json.Schema;
@@ -320,15 +321,20 @@ public class OpenApiValidator
 
         var jsonSchema = schema.ToJsonSchema();
         var validationResult = jsonSchema.Evaluate(
-            JsonNode.Parse(body),
+            JsonDocument.Parse(body).RootElement,
             JsonSchemaEvaluationOptions
         );
 
-        if (!validationResult.IsValid)
+        if (validationResult.IsValid)
         {
-            var message = new StringBuilder();
+            return true;
+        }
 
-            foreach (var detail in validationResult.Details.Where(d => d.HasErrors))
+        var message = new StringBuilder();
+
+        if (validationResult.Details != null)
+        {
+            foreach (var detail in validationResult.Details.Where(d => d.Errors != null))
             {
                 var path = detail.EvaluationPath.ToString();
 
@@ -337,15 +343,13 @@ public class OpenApiValidator
                     message.AppendLine($"[{error.Key}] {path}: {error.Value}");
                 }
             }
-
-            validationErrors.Add(
-                new ValidationError($"{bodyType} body failed schema validation: \n\n" + message)
-            );
-
-            return false;
         }
 
-        return true;
+        validationErrors.Add(
+            new ValidationError($"{bodyType} body failed schema validation: \n\n" + message)
+        );
+
+        return false;
     }
 
     private OpenApiServer? FindServer(Request request)
