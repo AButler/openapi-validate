@@ -46,7 +46,7 @@ paths:
                   id:
                     type: string
     delete:
-        summary: Deletes my user.
-        responses:
-          "204":
-            description: User deleted successfully
+      summary: Deletes my user.
+      responses:
+        "204":
+          description: User deleted successfully
