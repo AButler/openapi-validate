@@ -211,6 +211,60 @@ public class ResponseValidatorTests
         validateAction.ShouldNotThrow();
     }
 
+    [Fact]
+    public async Task LiteralAndTemplatedPath_GetUser()
+    {
+        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("GET", new Uri("http://api.example.com/v1/user/abcdef"));
+        var response = new Response(200, "application/json", """{"id":"abcdef"}""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task LiteralAndTemplatedPath_GetMeUser()
+    {
+        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("GET", new Uri("http://api.example.com/v1/user/me"));
+        var response = new Response(200, "application/json", """{"id":"abcdef"}""");
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task LiteralAndTemplatedPath_DeleteMeUser()
+    {
+        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request("DELETE", new Uri("http://api.example.com/v1/user/me"));
+        var response = new Response(204);
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
     private static async Task<OpenApiDocument> GetDocument(string filename)
     {
         var settings = new OpenApiReaderSettings();
