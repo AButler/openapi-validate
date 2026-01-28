@@ -67,22 +67,45 @@ internal static class OpenApiExtensions
     {
         var requestPathString = new PathString(requestPath);
 
+        IOpenApiPathItem? matchingTemplatePathItem = null;
+
         foreach (var kvp in paths)
         {
             var specPath = new PathString(kvp.Key);
-            if (IsPathMatch(specPath, requestPathString))
+
+            if (!IsPathMatch(specPath, requestPathString, out var isTemplatePath))
             {
-                path = kvp.Value;
-                return true;
+                continue;
             }
+
+            if (isTemplatePath)
+            {
+                matchingTemplatePathItem = kvp.Value;
+                continue;
+            }
+
+            path = kvp.Value;
+            return true;
+        }
+
+        if (matchingTemplatePathItem is not null)
+        {
+            path = matchingTemplatePathItem;
+            return true;
         }
 
         path = null!;
         return false;
     }
 
-    private static bool IsPathMatch(PathString specPath, PathString requestPath)
+    private static bool IsPathMatch(
+        PathString specPath,
+        PathString requestPath,
+        out bool isTemplatePath
+    )
     {
+        isTemplatePath = false;
+
         if (specPath.Segments.Length != requestPath.Segments.Length)
         {
             return false;
@@ -95,6 +118,7 @@ internal static class OpenApiExtensions
             if (segment.StartsWith('{') && segment.EndsWith('}'))
             {
                 // Is template parameter, so skip checking
+                isTemplatePath = true;
                 continue;
             }
 
@@ -105,6 +129,7 @@ internal static class OpenApiExtensions
                 )
             )
             {
+                isTemplatePath = false;
                 return false;
             }
         }
