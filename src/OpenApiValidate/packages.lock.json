@@ -4,11 +4,11 @@
     "net8.0": {
       "JsonSchema.Net.OpenApi": {
         "type": "Direct",
-        "requested": "[4.0.0, )",
-        "resolved": "4.0.0",
-        "contentHash": "h7MIvE30KsozuK7JzfTt8gO72o3Qqxgu3ruyw44LmE9wH1FVVcH00keUhjQI+FyoZbO5QTMq2NJJmslQK8ZKcA==",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "wa4cHIPEcIsYQONp0KIkcjoTVxgGQTSWFuzcu4/VdLLHPxMR9rBDZCwS+jgpBR2J8GKcB4pTC4uN8pRAZkXiNA==",
         "dependencies": {
-          "JsonSchema.Net": "8.0.0"
+          "JsonSchema.Net": "9.0.0"
         }
       },
       "Microsoft.OpenApi.YamlReader": {
@@ -24,29 +24,29 @@
       },
       "Humanizer.Core": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "scB3+KcxNmEjZK5V8rKCW2gIiL8m8KH91w14FuuExyhi9xTyAJ+jr+DDxGdy12mHmioe2uvjxTfMgM7WmSUFlw=="
+        "resolved": "2.14.1",
+        "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
       },
       "Json.More.Net": {
         "type": "Transitive",
-        "resolved": "2.2.0",
-        "contentHash": "fiyEZJNgiCzDa7/N9bZ+CnM5qnawyJ54+CkHNZ2svwxWBWNNFzydJ7RlroqMdOjokGBiLcKIxdajNvOklzlYqQ=="
+        "resolved": "3.0.0",
+        "contentHash": "+kj2dE04clW9+Bw4GoEVBFdLSiOKwLEkiiGbX+CK860DbytCtpD0QA68cEQISMnIrxyxQPw5gQAra22WCnRPUA=="
       },
       "JsonPointer.Net": {
         "type": "Transitive",
-        "resolved": "6.0.0",
-        "contentHash": "OOObaRq33mNkoMFM1JfdW3nD6U6xF0MHHxPFAxSpKHNNTK6Zbt8U9grquJ+m2onZ1M7cruho0fWzHjhpjEXjog==",
+        "resolved": "7.0.0",
+        "contentHash": "jdnFo5huuJDB3ASWIkD0F9Ntf+9nOtRbsIp4VqRlHbTW9LxpBBMRKQhQJxPtIFAhNVS55aAsMb78TB+LK29CqQ==",
         "dependencies": {
-          "Humanizer.Core": "3.0.1",
-          "Json.More.Net": "2.2.0"
+          "Humanizer.Core": "2.14.1",
+          "Json.More.Net": "3.0.0"
         }
       },
       "JsonSchema.Net": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "YQQo7/ozc7kbmTaCE4p1127z3LyHuWLGfXk/7sTqNVVpUawEIop9mtlyMKSOPZshM777oTjaTHc1f1/S/Gxnjw==",
+        "resolved": "9.0.0",
+        "contentHash": "rGa8+OIvK9HdRduVTKrTTKTCWmPEcMgwOWXOzhDoJWirY8flz9cOVuJv21XyotDZBKAMWxnysr3E5AN1tMXubQ==",
         "dependencies": {
-          "JsonPointer.Net": "6.0.0"
+          "JsonPointer.Net": "7.0.0"
         }
       },
       "Microsoft.OpenApi": {
