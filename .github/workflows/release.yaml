@@ -76,6 +76,20 @@ jobs:
       - name: Publish
         run: dotnet nuget push "*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
         working-directory: .nupkgs
+        
+      - name: Create tag
+        uses: actions/github-script@v8
+        env:
+          TAG: v${{ needs.version.outputs.version_full }}
+        with:
+          script: |
+            const tag = process.env.TAG;
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tag}`,
+              sha: context.sha
+            })
 
       - name: Create GitHub release
         uses: ncipollo/release-action@v1
