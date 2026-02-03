@@ -76,7 +76,7 @@ jobs:
       - name: Publish
         run: dotnet nuget push "*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
         working-directory: .nupkgs
-        
+
       - name: Create tag
         uses: actions/github-script@v8
         env:
@@ -84,7 +84,7 @@ jobs:
         with:
           script: |
             const tag = process.env.TAG;
-            
+
             // Check if tag already exists
             let existingTag;
             try {
@@ -101,7 +101,7 @@ jobs:
                 throw error;
               }
             }
-            
+
             if (existingTag) {
               const existingSha = existingTag.data.object.sha;
               if (existingSha === context.sha) {
@@ -112,7 +112,7 @@ jobs:
                 return;
               }
             }
-            
+
             // Create the tag
             await github.rest.git.createRef({
               owner: context.repo.owner,
