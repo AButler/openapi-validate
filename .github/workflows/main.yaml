@@ -1,4 +1,4 @@
-﻿name: Build & Test (Main)
+name: Build & Test (Main)
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: .
       - name: Generate variables
