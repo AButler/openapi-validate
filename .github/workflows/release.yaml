@@ -108,8 +108,7 @@ jobs:
                 console.log(`Tag ${tag} already exists with the same SHA (${context.sha}). Skipping tag creation.`);
                 return;
               } else {
-                core.setFailed(`Tag ${tag} already exists with a different SHA. Existing: ${existingSha}, Current: ${context.sha}`);
-                return;
+                throw new Error(`Tag ${tag} already exists with a different SHA. Existing: ${existingSha}, Current: ${context.sha}`);
               }
             }
 
