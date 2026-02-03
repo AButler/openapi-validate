@@ -77,6 +77,50 @@ jobs:
         run: dotnet nuget push "*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
         working-directory: .nupkgs
 
+      - name: Create tag
+        uses: actions/github-script@v8
+        env:
+          TAG: v${{ needs.version.outputs.version_full }}
+        with:
+          script: |
+            const tag = process.env.TAG;
+
+            // Check if tag already exists
+            let existingTag;
+            try {
+              existingTag = await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tag}`
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                // Tag doesn't exist, we can create it
+                existingTag = null;
+              } else {
+                throw error;
+              }
+            }
+
+            if (existingTag) {
+              const existingSha = existingTag.data.object.sha;
+              if (existingSha === context.sha) {
+                console.log(`Tag ${tag} already exists with the same SHA (${context.sha}). Skipping tag creation.`);
+                return;
+              } else {
+                throw new Error(`Tag ${tag} already exists with a different SHA. Existing: ${existingSha}, Current: ${context.sha}`);
+              }
+            }
+
+            // Create the tag
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tag}`,
+              sha: context.sha
+            });
+            console.log(`Tag ${tag} created successfully at ${context.sha}`);
+
       - name: Create GitHub release
         uses: ncipollo/release-action@v1
         with:
