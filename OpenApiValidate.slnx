@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/OpenApiValidate/OpenApiValidate.csproj" />
+  <Project Path="test/OpenApiValidate.Tests/OpenApiValidate.Tests.csproj" />
+</Solution>

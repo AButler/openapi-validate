@@ -19,7 +19,7 @@ jobs:
       is_prerelease: ${{ steps.version.outputs.is_prerelease }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: build
 
@@ -49,15 +49,15 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
       - name: Restore cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
@@ -78,7 +78,7 @@ jobs:
         working-directory: .nupkgs
 
       - name: Create tag
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           TAG: v${{ needs.version.outputs.version_full }}
         with:
