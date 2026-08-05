@@ -1,6 +1,4 @@
-﻿using Microsoft.OpenApi;
-using Microsoft.OpenApi.Reader;
-using Shouldly;
+﻿using Shouldly;
 
 namespace OpenApiValidate.Tests;
 
@@ -9,7 +7,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task Simple()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -27,7 +25,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task WithQueryString()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -45,7 +43,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task WithRequiredQueryString()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -66,7 +64,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task WithoutRequiredQueryString()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -84,7 +82,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task WithRouteParameter()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -102,7 +100,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task ServerAlias()
     {
-        var openApiDocument = await GetDocument("TestData/Simple.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Simple.yaml");
 
         var settings = new OpenApiValidatorSettings();
         settings.ServerAliases.Add("http://api.example.com/v1", "http://localhost/v1");
@@ -123,7 +121,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task NoServers()
     {
-        var openApiDocument = await GetDocument("TestData/NoServers.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/NoServers.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -141,7 +139,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task Petstore_PutPet()
     {
-        var openApiDocument = await GetDocument("TestData/Petstore.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Petstore.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -169,7 +167,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task Petstore_PutPet_Error()
     {
-        var openApiDocument = await GetDocument("TestData/Petstore.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Petstore.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -193,7 +191,7 @@ public class ResponseValidatorTests
     [Fact]
     public async Task Petstore_DeletePet()
     {
-        var openApiDocument = await GetDocument("TestData/Petstore.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument("TestData/Petstore.yaml");
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -214,7 +212,9 @@ public class ResponseValidatorTests
     [Fact]
     public async Task LiteralAndTemplatedPath_GetUser()
     {
-        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument(
+            "TestData/LiteralAndTemplatedPath.yaml"
+        );
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -232,7 +232,9 @@ public class ResponseValidatorTests
     [Fact]
     public async Task LiteralAndTemplatedPath_GetMeUser()
     {
-        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument(
+            "TestData/LiteralAndTemplatedPath.yaml"
+        );
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -250,7 +252,9 @@ public class ResponseValidatorTests
     [Fact]
     public async Task LiteralAndTemplatedPath_DeleteMeUser()
     {
-        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+        var openApiDocument = await DocumentLoader.GetDocument(
+            "TestData/LiteralAndTemplatedPath.yaml"
+        );
 
         var validator = new OpenApiValidator(openApiDocument);
 
@@ -263,28 +267,5 @@ public class ResponseValidatorTests
         };
 
         validateAction.ShouldNotThrow();
-    }
-
-    private static async Task<OpenApiDocument> GetDocument(string filename)
-    {
-        var settings = new OpenApiReaderSettings();
-        settings.AddYamlReader();
-
-        var result = await OpenApiDocument.LoadAsync(File.OpenRead(filename), settings: settings);
-
-        if (result.Diagnostic != null && result.Diagnostic.Errors.Any())
-        {
-            throw new Exception(
-                "Invalid OpenAPI document: "
-                    + string.Join(Environment.NewLine, result.Diagnostic.Errors)
-            );
-        }
-
-        if (result.Document == null)
-        {
-            throw new Exception("Invalid OpenAPI document");
-        }
-
-        return result.Document;
     }
 }

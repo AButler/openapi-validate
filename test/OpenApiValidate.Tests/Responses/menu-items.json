@@ -1,0 +1,66 @@
+﻿{
+  "categories": [
+    {
+      "id": "fQ4SzBYsJQ4BjcbNfK6bvbVD",
+      "title": "Scottish Whisky - Speyside",
+      "shortTitle": "",
+      "description": "",
+      "type": "Whisky",
+      "items": [
+        {
+          "alcoholByVolume": 46,
+          "id": "VZl9qxbMXD5BFLVF1rmpG9qD",
+          "title": "Glenfiddich Fire & Cane",
+          "type": "Whisky",
+          "price": {
+            "currentPrice": 7.8,
+            "basePrice": 7.8,
+            "memberPrice": null
+          },
+          "availability": "Available",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ZQ4SfBYsJQ4qjcbNfK6bvbVD",
+      "title": "Cocktails",
+      "shortTitle": "",
+      "description": "",
+      "type": "Cocktail",
+      "items": [
+        {
+          "id": "KMvBvTdThx6Bhmwsh1CzJRhB",
+          "title": "Whisky Sour",
+          "imageUrl": "http://foo.com/image.jpg",
+          "description": "Classic mixed alcoholic drink made with whisky, fresh lemon juice, and simple syrup. It balances a sharp, tangy citrus taste with sweet syrup and rich whisky flavor.",
+          "type": "Cocktail",
+          "price": {
+            "currentPrice": 4,
+            "basePrice": 4,
+            "memberPrice": null
+          },
+          "availability": "Available",
+          "tags": []
+        }
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "id": "dram-of-the-month",
+      "name": "Dram of the Month",
+      "style": "drink-of-the-month"
+    },
+    {
+      "id": "recommended",
+      "name": "Recommended",
+      "style": "recommended"
+    },
+    {
+      "id": "new",
+      "name": "Recently Added",
+      "style": "recently-added"
+    }
+  ]
+}

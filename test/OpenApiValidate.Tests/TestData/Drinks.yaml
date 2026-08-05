@@ -1,0 +1,238 @@
+﻿openapi: 3.1.0
+info:
+  title: Drinks API
+  description: Drinks API
+  version: 1.0.0
+
+servers:
+  - url: 'https://api.drinks.example.dev/api'
+    description: Development
+  - url: 'https://api.drinks.example.com/api'
+    description: Production
+
+paths:
+  /menu/items:
+    get:
+      summary: Get the menu
+      description: Returns the full menu with menu items contained within categories
+      tags:
+        - Menu
+      parameters:
+        - in: query
+          name: includeUnavailable
+          description: Whether to include unavailable items (availability = 'NoLongerAvailable') in the menu response
+          schema:
+            type: boolean
+            default: false
+          required: false
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Menu'
+              example:
+                categories:
+                  - id: YMXtRblNxnzBKMPMxcrbkcdD
+                    title: Scottish Whisky - Speyside
+                    shortTitle: Speyside
+                    description: Whisky from the Speyside region in Scotland
+                    type: Whisky
+                    subcategories: []
+                    items:
+                      - id: xB3GGD4vQD7BR4twWLl0BGSB
+                        title: Glenfiddich 12 Year Old
+                        type: Whisky
+                        price:
+                          currentPrice: 4
+                        availability: Available
+                        tags: []
+                      - id: s47ct4YD7Y1Bynm51zhhXxxC
+                        title: The Balvenie 12 Year Old
+                        type: Whisky
+                        price:
+                          basePrice: 5
+                          currentPrice: 4.5
+                        availability: Available
+                        tags:
+                          - new
+                      - id: 5cJyzHnDp81BHMH1nFQNSKJC
+                        title: The Balvenie Caribbean Cask
+                        type: Whisky
+                        price:
+                          currentPrice: 6.5
+                          memberPrice: 4
+                        availability: LimitedAvailability
+                        tags:
+                          - dram-of-the-month
+                tags:
+                  - id: new
+                    name: Recently added
+                    style: new
+                  - id: dram-of-the-month
+                    name: Dram of the Month
+                    style: member
+
+components:
+  schemas:
+    DrinkType:
+      type: string
+      enum:
+        - Whisky
+        - Cocktail
+        - Beer
+        - Wine
+        - Spirits
+        - SoftDrink
+        - Food
+
+    AvailabilityStatus:
+      type: string
+      enum:
+        - NoLongerAvailable
+        - CurrentlyUnavailable
+        - Available
+        - LimitedAvailability
+
+    Menu:
+      type: object
+      required:
+        - categories
+        - tags
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryContainer"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+
+    CategoryContainer:
+      type: object
+      required:
+        - id
+        - title
+        - shortTitle
+        - description
+        - type
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        shortTitle:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: "#/components/schemas/DrinkType"
+        subcategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryContainer"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MenuItem"
+
+    MenuItem:
+      oneOf:
+        - $ref: "#/components/schemas/WhiskyMenuItem"
+        - $ref: "#/components/schemas/CocktailMenuItem"
+      discriminator:
+        propertyName: type
+        mapping:
+          Whisky: '#/components/schemas/WhiskyMenuItem'
+          Cocktail: '#/components/schemas/CocktailMenuItem'
+
+    WhiskyMenuItem:
+      allOf:
+        - $ref: "#/components/schemas/BaseMenuItem"
+        - type: object
+          required:
+            - alcoholByVolume
+          properties:
+            alcoholByVolume:
+              type: number
+              multipleOf: 0.1
+              minimum: 0
+              maximum: 100
+
+    CocktailMenuItem:
+      allOf:
+        - $ref: "#/components/schemas/BaseMenuItem"
+        - type: object
+          required:
+            - description
+            - imageUrl
+          properties:
+            description:
+              type: string
+            imageUrl:
+              type: string
+
+    BaseMenuItem:
+      type: object
+      required:
+        - id
+        - title
+        - type
+        - price
+        - availability
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        type:
+          $ref: "#/components/schemas/DrinkType"
+        price:
+          $ref: "#/components/schemas/Price"
+        availability:
+          $ref: "#/components/schemas/AvailabilityStatus"
+        tags:
+          type: array
+          items:
+            type: string
+
+    Price:
+      type: object
+      required:
+        - currentPrice
+      properties:
+        basePrice:
+          type: 
+            - number
+            - 'null'
+          format: float
+          multipleOf: 0.01
+          minimum: 0
+        currentPrice:
+          type: number
+          format: float
+          multipleOf: 0.01
+          minimum: 0
+        memberPrice:
+          type:
+            - number
+            - 'null'
+          format: float
+          multipleOf: 0.01
+          minimum: 0
+
+    Tag:
+      type: object
+      required:
+        - id
+        - name
+        - style
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        style:
+          type: string
