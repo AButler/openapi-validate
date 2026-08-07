@@ -67,7 +67,8 @@ internal static class OpenApiExtensions
     {
         var requestPathString = new PathString(requestPath);
 
-        var matchingPaths = new OpenApiPaths();
+        TemplateMatchScore bestMatchScore = new(0, 0);
+        IOpenApiPathItem? matchingTemplatePathItem = null;
 
         foreach (var kvp in paths)
         {
@@ -80,7 +81,12 @@ internal static class OpenApiExtensions
 
             if (isTemplatePath)
             {
-                matchingPaths.Add(kvp.Key, kvp.Value);
+                var matchScore = GetTemplateMatchScore(specPath);
+                if (matchScore.BetterThan(bestMatchScore))
+                {
+                    bestMatchScore = matchScore;
+                    matchingTemplatePathItem = kvp.Value;
+                }
                 continue;
             }
 
@@ -88,10 +94,9 @@ internal static class OpenApiExtensions
             return true;
         }
 
-        if (matchingPaths.Count > 0)
+        if (matchingTemplatePathItem is not null)
         {
-            var bestMatch = GetBestMatch(matchingPaths);
-            path = bestMatch;
+            path = matchingTemplatePathItem;
             return true;
         }
 
@@ -99,48 +104,27 @@ internal static class OpenApiExtensions
         return false;
     }
 
-    private static IOpenApiPathItem GetBestMatch(OpenApiPaths matchingPaths)
+    private static TemplateMatchScore GetTemplateMatchScore(PathString specPath)
     {
-        IOpenApiPathItem? bestMatch = null;
-        var bestLiteralSegmentCount = -1;
-        var bestLiteralPrefixCount = -1;
+        var literalSegmentCount = 0;
+        var literalPrefixCount = 0;
 
-        foreach (var kvp in matchingPaths)
+        for (var i = 0; i < specPath.Segments.Length; i++)
         {
-            var specPath = new PathString(kvp.Key);
-            var literalSegmentCount = 0;
-            var literalPrefixCount = 0;
-
-            for (var i = 0; i < specPath.Segments.Length; i++)
+            if (IsTemplateSegment(specPath.Segments[i]))
             {
-                if (IsTemplateSegment(specPath.Segments[i]))
-                {
-                    continue;
-                }
-
-                literalSegmentCount++;
-
-                if (literalPrefixCount == i)
-                {
-                    literalPrefixCount++;
-                }
+                continue;
             }
 
-            if (
-                literalSegmentCount > bestLiteralSegmentCount
-                || (
-                    literalSegmentCount == bestLiteralSegmentCount
-                    && literalPrefixCount > bestLiteralPrefixCount
-                )
-            )
+            literalSegmentCount++;
+
+            if (literalPrefixCount == i)
             {
-                bestMatch = kvp.Value;
-                bestLiteralSegmentCount = literalSegmentCount;
-                bestLiteralPrefixCount = literalPrefixCount;
+                literalPrefixCount++;
             }
         }
 
-        return bestMatch!;
+        return new TemplateMatchScore(literalSegmentCount, literalPrefixCount);
     }
 
     private static bool IsPathMatch(
@@ -185,5 +169,20 @@ internal static class OpenApiExtensions
     private static bool IsTemplateSegment(string segment)
     {
         return segment.StartsWith('{') && segment.EndsWith('}');
+    }
+
+    private class TemplateMatchScore(int literalSegmentCount, int literalPrefixCount)
+    {
+        public int LiteralSegmentCount { get; } = literalSegmentCount;
+        public int LiteralPrefixCount { get; } = literalPrefixCount;
+
+        public bool BetterThan(TemplateMatchScore other)
+        {
+            return LiteralSegmentCount > other.LiteralSegmentCount
+                || (
+                    LiteralSegmentCount == other.LiteralSegmentCount
+                    && LiteralPrefixCount > other.LiteralPrefixCount
+                );
+        }
     }
 }
