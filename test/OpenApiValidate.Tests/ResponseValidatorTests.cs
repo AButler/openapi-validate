@@ -265,6 +265,48 @@ public class ResponseValidatorTests
         validateAction.ShouldNotThrow();
     }
 
+    [Fact]
+    public async Task LiteralAndTemplatedPath_DeleteMeUserRole()
+    {
+        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPath.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request(
+            "DELETE",
+            new Uri("http://api.example.com/v1/user/me/role/admin")
+        );
+        var response = new Response(204);
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
+    [Fact]
+    public async Task LiteralAndTemplatedPath_DeleteMeUserRole_ReversedDefinitionOrder()
+    {
+        var openApiDocument = await GetDocument("TestData/LiteralAndTemplatedPathReversed.yaml");
+
+        var validator = new OpenApiValidator(openApiDocument);
+
+        var request = new Request(
+            "DELETE",
+            new Uri("http://api.example.com/v1/user/me/role/admin")
+        );
+        var response = new Response(204);
+
+        var validateAction = () =>
+        {
+            validator.Validate(request, response);
+        };
+
+        validateAction.ShouldNotThrow();
+    }
+
     private static async Task<OpenApiDocument> GetDocument(string filename)
     {
         var settings = new OpenApiReaderSettings();

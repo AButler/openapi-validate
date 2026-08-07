@@ -67,6 +67,7 @@ internal static class OpenApiExtensions
     {
         var requestPathString = new PathString(requestPath);
 
+        TemplateMatchScore bestMatchScore = TemplateMatchScore.Min;
         IOpenApiPathItem? matchingTemplatePathItem = null;
 
         foreach (var kvp in paths)
@@ -80,7 +81,12 @@ internal static class OpenApiExtensions
 
             if (isTemplatePath)
             {
-                matchingTemplatePathItem = kvp.Value;
+                var matchScore = GetTemplateMatchScore(specPath);
+                if (matchScore.BetterThan(bestMatchScore))
+                {
+                    bestMatchScore = matchScore;
+                    matchingTemplatePathItem = kvp.Value;
+                }
                 continue;
             }
 
@@ -96,6 +102,29 @@ internal static class OpenApiExtensions
 
         path = null!;
         return false;
+    }
+
+    private static TemplateMatchScore GetTemplateMatchScore(PathString specPath)
+    {
+        var literalSegmentCount = 0;
+        var literalPrefixCount = 0;
+
+        for (var i = 0; i < specPath.Segments.Length; i++)
+        {
+            if (IsTemplateSegment(specPath.Segments[i]))
+            {
+                continue;
+            }
+
+            literalSegmentCount++;
+
+            if (literalPrefixCount == i)
+            {
+                literalPrefixCount++;
+            }
+        }
+
+        return new TemplateMatchScore(literalSegmentCount, literalPrefixCount);
     }
 
     private static bool IsPathMatch(
@@ -115,19 +144,14 @@ internal static class OpenApiExtensions
         {
             var segment = specPath.Segments[i];
 
-            if (segment.StartsWith('{') && segment.EndsWith('}'))
+            if (IsTemplateSegment(segment))
             {
                 // Is template parameter, so skip checking
                 isTemplatePath = true;
                 continue;
             }
 
-            if (
-                !segment.Equals(
-                    requestPath.Segments[i],
-                    StringComparison.InvariantCultureIgnoreCase
-                )
-            )
+            if (!segment.Equals(requestPath.Segments[i], StringComparison.OrdinalIgnoreCase))
             {
                 isTemplatePath = false;
                 return false;
@@ -135,5 +159,27 @@ internal static class OpenApiExtensions
         }
 
         return true;
+    }
+
+    private static bool IsTemplateSegment(string segment)
+    {
+        return segment.StartsWith('{') && segment.EndsWith('}');
+    }
+
+    private class TemplateMatchScore(int literalSegmentCount, int literalPrefixCount)
+    {
+        public static readonly TemplateMatchScore Min = new(int.MinValue, int.MinValue);
+
+        public int LiteralSegmentCount { get; } = literalSegmentCount;
+        public int LiteralPrefixCount { get; } = literalPrefixCount;
+
+        public bool BetterThan(TemplateMatchScore other)
+        {
+            return LiteralSegmentCount > other.LiteralSegmentCount
+                || (
+                    LiteralSegmentCount == other.LiteralSegmentCount
+                    && LiteralPrefixCount > other.LiteralPrefixCount
+                );
+        }
     }
 }
