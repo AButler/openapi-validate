@@ -67,7 +67,7 @@ internal static class OpenApiExtensions
     {
         var requestPathString = new PathString(requestPath);
 
-        TemplateMatchScore bestMatchScore = new(0, 0);
+        TemplateMatchScore bestMatchScore = TemplateMatchScore.Min;
         IOpenApiPathItem? matchingTemplatePathItem = null;
 
         foreach (var kvp in paths)
@@ -151,12 +151,7 @@ internal static class OpenApiExtensions
                 continue;
             }
 
-            if (
-                !segment.Equals(
-                    requestPath.Segments[i],
-                    StringComparison.InvariantCultureIgnoreCase
-                )
-            )
+            if (!segment.Equals(requestPath.Segments[i], StringComparison.OrdinalIgnoreCase))
             {
                 isTemplatePath = false;
                 return false;
@@ -173,6 +168,8 @@ internal static class OpenApiExtensions
 
     private class TemplateMatchScore(int literalSegmentCount, int literalPrefixCount)
     {
+        public static readonly TemplateMatchScore Min = new(int.MinValue, int.MinValue);
+
         public int LiteralSegmentCount { get; } = literalSegmentCount;
         public int LiteralPrefixCount { get; } = literalPrefixCount;
 

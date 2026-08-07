@@ -54,7 +54,7 @@ paths:
   /user/me/role/{roleId}:
     get:
       summary: Returns a single role
-      responses: 
+      responses:
         "200":
           description: A role object
           content:
