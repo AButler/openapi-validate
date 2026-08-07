@@ -50,11 +50,25 @@ paths:
       responses:
         "204":
           description: User deleted successfully
-          
+  
+  /user/{userId}/role/{roleId}:
+    get:
+      summary: Returns a single role
+      responses:
+        "200":
+          description: A role object
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+
   /user/me/role/{roleId}:
     get:
       summary: Returns a single role
-      responses: 
+      responses:
         "200":
           description: A role object
           content:
@@ -69,17 +83,3 @@ paths:
       responses:
         "204":
           description: Role deleted successfully
-          
-  /user/{userId}/role/{roleId}:
-    get:
-      summary: Returns a single role
-      responses:
-        "200":
-          description: A role object
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string

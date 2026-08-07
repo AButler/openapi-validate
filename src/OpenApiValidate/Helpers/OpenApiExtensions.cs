@@ -67,7 +67,7 @@ internal static class OpenApiExtensions
     {
         var requestPathString = new PathString(requestPath);
 
-        IOpenApiPathItem? matchingTemplatePathItem = null;
+        var matchingPaths = new OpenApiPaths();
 
         foreach (var kvp in paths)
         {
@@ -80,7 +80,7 @@ internal static class OpenApiExtensions
 
             if (isTemplatePath)
             {
-                matchingTemplatePathItem = kvp.Value;
+                matchingPaths.Add(kvp.Key, kvp.Value);
                 continue;
             }
 
@@ -88,14 +88,59 @@ internal static class OpenApiExtensions
             return true;
         }
 
-        if (matchingTemplatePathItem is not null)
+        if (matchingPaths.Count > 0)
         {
-            path = matchingTemplatePathItem;
+            var bestMatch = GetBestMatch(matchingPaths);
+            path = bestMatch;
             return true;
         }
 
         path = null!;
         return false;
+    }
+
+    private static IOpenApiPathItem GetBestMatch(OpenApiPaths matchingPaths)
+    {
+        IOpenApiPathItem? bestMatch = null;
+        var bestLiteralSegmentCount = -1;
+        var bestLiteralPrefixCount = -1;
+
+        foreach (var kvp in matchingPaths)
+        {
+            var specPath = new PathString(kvp.Key);
+            var literalSegmentCount = 0;
+            var literalPrefixCount = 0;
+
+            for (var i = 0; i < specPath.Segments.Length; i++)
+            {
+                if (IsTemplateSegment(specPath.Segments[i]))
+                {
+                    continue;
+                }
+
+                literalSegmentCount++;
+
+                if (literalPrefixCount == i)
+                {
+                    literalPrefixCount++;
+                }
+            }
+
+            if (
+                literalSegmentCount > bestLiteralSegmentCount
+                || (
+                    literalSegmentCount == bestLiteralSegmentCount
+                    && literalPrefixCount > bestLiteralPrefixCount
+                )
+            )
+            {
+                bestMatch = kvp.Value;
+                bestLiteralSegmentCount = literalSegmentCount;
+                bestLiteralPrefixCount = literalPrefixCount;
+            }
+        }
+
+        return bestMatch!;
     }
 
     private static bool IsPathMatch(
@@ -115,7 +160,7 @@ internal static class OpenApiExtensions
         {
             var segment = specPath.Segments[i];
 
-            if (segment.StartsWith('{') && segment.EndsWith('}'))
+            if (IsTemplateSegment(segment))
             {
                 // Is template parameter, so skip checking
                 isTemplatePath = true;
@@ -135,5 +180,10 @@ internal static class OpenApiExtensions
         }
 
         return true;
+    }
+
+    private static bool IsTemplateSegment(string segment)
+    {
+        return segment.StartsWith('{') && segment.EndsWith('}');
     }
 }
