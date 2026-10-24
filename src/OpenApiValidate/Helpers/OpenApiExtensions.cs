@@ -16,92 +16,93 @@ internal static class OpenApiExtensions
         Dialect = Json.Schema.OpenApi.Dialect.OpenApi_31,
     };
 
-    public static JsonSchema ToJsonSchema(this IOpenApiSchema schema)
+    extension(IOpenApiSchema schema)
     {
-        var writer = new StringWriter();
+        public JsonSchema ToJsonSchema()
+        {
+            var writer = new StringWriter();
 
-        schema.SerializeAsV31(new OpenApiJsonWriter(writer, OpenApiWriterSettings));
+            schema.SerializeAsV31(new OpenApiJsonWriter(writer, OpenApiWriterSettings));
 
-        var json = writer.ToString();
+            var json = writer.ToString();
 
-        return JsonSchema.FromText(json, JsonSchemaBuildOptions);
+            return JsonSchema.FromText(json, JsonSchemaBuildOptions);
+        }
     }
 
-    public static bool TryMatchResponse(
-        this OpenApiResponses responses,
-        int statusCode,
-        out IOpenApiResponse response
-    )
+    extension(OpenApiResponses responses)
     {
-        if (responses.TryGetValue(statusCode.ToString(), out var statusCodeMatchResponse))
+        public bool TryMatchResponse(int statusCode, out IOpenApiResponse response)
         {
-            response = statusCodeMatchResponse;
-            return true;
-        }
-
-        var range = statusCode switch
-        {
-            >= 100 and <= 199 => "1XX",
-            >= 200 and <= 299 => "2XX",
-            >= 300 and <= 399 => "3XX",
-            >= 400 and <= 499 => "4XX",
-            >= 500 and <= 599 => "5XX",
-            _ => null,
-        };
-
-        if (range != null && responses.TryGetValue(range, out var rangeMatchResponse))
-        {
-            response = rangeMatchResponse;
-            return true;
-        }
-
-        response = null!;
-        return false;
-    }
-
-    public static bool TryMatchPath(
-        this OpenApiPaths paths,
-        string requestPath,
-        out IOpenApiPathItem path
-    )
-    {
-        var requestPathString = new PathString(requestPath);
-
-        TemplateMatchScore bestMatchScore = TemplateMatchScore.Min;
-        IOpenApiPathItem? matchingTemplatePathItem = null;
-
-        foreach (var kvp in paths)
-        {
-            var specPath = new PathString(kvp.Key);
-
-            if (!IsPathMatch(specPath, requestPathString, out var isTemplatePath))
+            if (responses.TryGetValue(statusCode.ToString(), out var statusCodeMatchResponse))
             {
-                continue;
+                response = statusCodeMatchResponse;
+                return true;
             }
 
-            if (isTemplatePath)
+            var range = statusCode switch
             {
-                var matchScore = GetTemplateMatchScore(specPath);
-                if (matchScore.BetterThan(bestMatchScore))
+                >= 100 and <= 199 => "1XX",
+                >= 200 and <= 299 => "2XX",
+                >= 300 and <= 399 => "3XX",
+                >= 400 and <= 499 => "4XX",
+                >= 500 and <= 599 => "5XX",
+                _ => null,
+            };
+
+            if (range != null && responses.TryGetValue(range, out var rangeMatchResponse))
+            {
+                response = rangeMatchResponse;
+                return true;
+            }
+
+            response = null!;
+            return false;
+        }
+    }
+
+    extension(OpenApiPaths paths)
+    {
+        public bool TryMatchPath(string requestPath, out IOpenApiPathItem path)
+        {
+            var requestPathString = new PathString(requestPath);
+
+            TemplateMatchScore bestMatchScore = TemplateMatchScore.Min;
+            IOpenApiPathItem? matchingTemplatePathItem = null;
+
+            foreach (var kvp in paths)
+            {
+                var specPath = new PathString(kvp.Key);
+
+                if (!IsPathMatch(specPath, requestPathString, out var isTemplatePath))
                 {
-                    bestMatchScore = matchScore;
-                    matchingTemplatePathItem = kvp.Value;
+                    continue;
                 }
-                continue;
+
+                if (isTemplatePath)
+                {
+                    var matchScore = GetTemplateMatchScore(specPath);
+                    if (matchScore.BetterThan(bestMatchScore))
+                    {
+                        bestMatchScore = matchScore;
+                        matchingTemplatePathItem = kvp.Value;
+                    }
+                    continue;
+                }
+
+                path = kvp.Value;
+                return true;
             }
 
-            path = kvp.Value;
-            return true;
-        }
+            if (matchingTemplatePathItem is not null)
+            {
+                path = matchingTemplatePathItem;
+                return true;
+            }
 
-        if (matchingTemplatePathItem is not null)
-        {
-            path = matchingTemplatePathItem;
-            return true;
+            path = null!;
+            return false;
         }
-
-        path = null!;
-        return false;
     }
 
     private static TemplateMatchScore GetTemplateMatchScore(PathString specPath)
