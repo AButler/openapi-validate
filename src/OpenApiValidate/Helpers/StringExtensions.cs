@@ -2,23 +2,26 @@
 
 internal static class StringExtensions
 {
-    public static string EnsureEndsWith(this string input, string end)
+    extension(string input)
     {
-        if (input.EndsWith(end, StringComparison.Ordinal))
+        public string EnsureEndsWith(string end)
         {
-            return input;
+            if (input.EndsWith(end, StringComparison.Ordinal))
+            {
+                return input;
+            }
+
+            return input + end;
         }
 
-        return input + end;
-    }
-
-    public static string EnsureStartsWith(this string input, string start)
-    {
-        if (input.StartsWith(start, StringComparison.Ordinal))
+        public string EnsureStartsWith(string start)
         {
-            return input;
-        }
+            if (input.StartsWith(start, StringComparison.Ordinal))
+            {
+                return input;
+            }
 
-        return start + input;
+            return start + input;
+        }
     }
 }

@@ -4,29 +4,26 @@ namespace OpenApiValidate;
 
 public static class StatusCodeListExtensions
 {
-    public static bool ContainsStatusCode(
-        this StatusCodeList statusCodeList,
-        HttpStatusCode statusCode
-    )
+    extension(StatusCodeList statusCodeList)
     {
-        return statusCodeList.ContainsStatusCode((int)statusCode);
-    }
+        public bool ContainsStatusCode(HttpStatusCode statusCode)
+        {
+            return statusCodeList.ContainsStatusCode((int)statusCode);
+        }
 
-    public static void Add(this StatusCodeList statusCodeList, HttpStatusCode statusCode)
-    {
-        statusCodeList.Add((int)statusCode);
-    }
+        public void Add(HttpStatusCode statusCode)
+        {
+            statusCodeList.Add((int)statusCode);
+        }
 
-    public static void AddRange(
-        this StatusCodeList statusCodeList,
-        params HttpStatusCode[] statusCodes
-    )
-    {
-        statusCodeList.AddRange(statusCodes.Cast<int>().ToArray());
-    }
+        public void AddRange(params HttpStatusCode[] statusCodes)
+        {
+            statusCodeList.AddRange(statusCodes.Cast<int>().ToArray());
+        }
 
-    public static bool Remove(this StatusCodeList statusCodeList, HttpStatusCode statusCode)
-    {
-        return statusCodeList.Remove((int)statusCode);
+        public bool Remove(HttpStatusCode statusCode)
+        {
+            return statusCodeList.Remove((int)statusCode);
+        }
     }
 }
